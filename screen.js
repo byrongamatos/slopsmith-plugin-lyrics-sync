@@ -270,6 +270,14 @@ async function lsSave() {
 // ── Screen hook ──────────────────────────────────────────────────────────
 
 (function() {
+    // Idempotency: if screen.js is re-evaluated (loader cache miss, hot reload,
+    // older core builds without the load-side guard), don't re-wrap showScreen —
+    // each re-wrap captures the previous wrapper, growing the chain and
+    // leaking closures.
+    const HOOK_KEY = '__slopsmithLyricsSyncHooksInstalled';
+    if (window[HOOK_KEY]) return;
+    window[HOOK_KEY] = true;
+
     const origShowScreen = window.showScreen;
     window.showScreen = function(id) {
         origShowScreen(id);
